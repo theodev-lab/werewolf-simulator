@@ -6,11 +6,15 @@ class Simulator:
         self.n_games = n_games
 
     def run(self):
-        results = {"villagers": 0, "wolves": 0}
+        results = {"villageois": 0, "loups-garous": 0}
         
         for _ in range(self.n_games):
             game = Game(self.role_counts)
             winner = game.play()
             results[winner] += 1
+            
+            if self.n_games == 1:
+                for line in game.history:
+                    print(line)
         
         return results

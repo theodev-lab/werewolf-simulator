@@ -4,66 +4,95 @@ from game.player import Player
 from roles import ROLE_MAP
 
 class Game:
-    def __init__(self, role_counts):
-        self.role_counts = role_counts
-        self.n_players = sum(role_counts.values())
-        self.players = self._init_players()
-        self.suspicion = np.zeros((self.n_players, self.n_players)) # Suspicion matrix: level of suspicion each player has towards every other player (used for voting behavior)
-        
-    def _init_players(self):
-        roles_deck = []
-        for role_name, count in self.role_counts.items():
-            RoleClass = ROLE_MAP[role_name]
-            roles_deck.extend([RoleClass() for _ in range(count)])
-        
-        random.shuffle(roles_deck)
-        return [Player(i, role) for i, role in enumerate(roles_deck)]
+	def __init__(self, role_counts):
+		self.role_counts = role_counts
+		self.n_players = sum(role_counts.values())
+		self.players = self._init_players()
+		self.suspicion = np.zeros((self.n_players, self.n_players)) # suspicion matrix: level of suspicion each player has towards every other player (used for voting behavior) 
+		self.history = []
+		self.dead_this_night = []
+		
+	def log(self, message):
+		self.history.append(message)
+	
+	def _init_players(self):
+		roles_deck = []
+		for role_name, count in self.role_counts.items():
+			RoleClass = ROLE_MAP[role_name]
+			roles_deck.extend([RoleClass() for _ in range(count)])
+		
+		random.shuffle(roles_deck)
+		return [Player(i, role) for i, role in enumerate(roles_deck)]
 
-    def alive_players(self):
-        return [p for p in self.players if p.alive]
+	def alive_players(self):
+		return [p for p in self.players if p.alive]
 
-    def kill_player(self, player):
-        if player.alive:
-            player.alive = False
-            player.role.on_death(self, player)
+	def kill_player(self, player):
+		if player.alive:
+			player.alive = False
+			self.dead_this_night.append(player)
 
-    def night_phase(self):
-        villagers = [p for p in self.players if p.role.camp == "villagers" and p.alive]
-        
-        if villagers:
-            target = random.choice(villagers)
-            self.kill_player(target)
+	def night_phase(self):
+		self.dead_this_night = []
+		self.log("\n🌙 La nuit tombe sur le village de Thiercelieux...")
+		
+		self.log("🐺 Les loups-garous vont décider d'une victime à dévorer.")
+		villagers = [p for p in self.players if p.role.camp == "villageois" and p.alive]
+		if villagers:
+			target = random.choice(villagers)
+			self.kill_player(target)
 
-    def day_phase(self):
-        votes = {}
-        
-        for p in self.alive_players():
-            vote = p.vote(self.players, self.suspicion[p.id])
-            votes[vote] = votes.get(vote, 0) + 1
-        
-        if votes:
-            target_id = max(votes, key=votes.get)
-            self.kill_player(self.players[target_id])
-    
-    def is_over(self):
-        wolves = [p for p in self.players if p.role.camp == "wolves" and p.alive]
-        villagers = [p for p in self.players if p.role.camp == "villagers" and p.alive]
-        
-        if not wolves:
-            return True, "villagers"
-        elif len(wolves) >= len(villagers): # we assume that there are only 2 camps : villagers and wolves
-            return True, "wolves"
-        else:
-            return False, None
+	def day_phase(self):
+		if not self.dead_this_night:
+			self.log("☀️  Le village se réveille et personne n'est mort pendant la nuit !")
+		else:
+			dead_infos = [f"le joueur {p.id} ({p.role.__class__.__name__})" for p in self.dead_this_night]
+			
+			if len(dead_infos) == 1:
+				dead_str = dead_infos[0]
+			else:
+				dead_str = f"{', '.join(dead_infos[:-1])} et {dead_infos[-1]}"
+				
+			self.log(f"☀️  Le village se réveille sans... {dead_str}.")
+   
+			for p in self.dead_this_night:		
+   				p.role.on_death(self, p)
+		
+		votes = {}
+  
+		for p in self.alive_players():
+			vote = p.vote(self.players, self.suspicion[p.id])
+			votes[vote] = votes.get(vote, 0) + 1
+		
+		if votes:
+			target_id = max(votes, key=votes.get)
+			self.log(f"🗳️  Le village a décidé d'éliminer le joueur {target_id} ({self.players[target_id].role.__class__.__name__}).")
+			self.kill_player(self.players[target_id])
+	
+	def is_over(self):
+		wolves = [p for p in self.players if p.role.camp == "loups-garous" and p.alive]
+		villagers = [p for p in self.players if p.role.camp == "villageois" and p.alive]
+		
+		if not wolves:
+			return True, "villageois"
+		elif len(wolves) >= len(villagers): # we assume that there are only 2 camps : villagers and wolves 
+			return True, "loups-garous"
+		else:
+			return False, None
+		
+	def play(self):
+		self.log("🎮 La partie vient de commencer !")
 
-    def play(self):
-        while True:
-            self.night_phase()
-            over, winner = self.is_over()
-            if over:
-                return winner
-                
-            self.day_phase()
-            over, winner = self.is_over()
-            if over:
-                return winner
+		while True:
+			self.night_phase()
+			over, winner = self.is_over()
+			if over:
+				break
+
+			self.day_phase()
+			over, winner = self.is_over()
+			if over:
+				break
+
+		self.log(f"\n🏆 La partie est terminée ! Les {winner} ont gagné !")
+		return winner
