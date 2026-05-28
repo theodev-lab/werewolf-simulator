@@ -4,7 +4,7 @@ import random
 class Player:
     def __init__(self, id, role):
         self.id = id
-        self.role = role # "wolf" or "villager"
+        self.role = role
         self.alive = True
         self.convince = np.random.normal(0, 1) # personality traits
 

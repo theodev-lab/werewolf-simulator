@@ -1,5 +1,8 @@
-N_PLAYERS = 10
-N_WOLVES = 3
-N_GAMES = 1000
+ROLE_COUNTS = {
+    "wolf": 3,
+    "hunter": 0,
+    "villager": 7
+}
 
+N_GAMES = 10000
 SEED = 42

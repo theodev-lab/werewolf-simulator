@@ -1,12 +1,12 @@
 from tabulate import tabulate
 
-def print_results(results, n_games):
-    total = sum(results.values())
+def print_results(results):
+    n_games = sum(results.values())
 
     table = []
 
     for k, v in sorted(results.items(), key=lambda x: x[1], reverse=True):
-        pct = (v / total) * 100
+        pct = (v / n_games) * 100
         table.append([k, v, f"{pct:.2f}%"])
 
     print("📊 WERWOLF SIMULATION RESULTS\n")
