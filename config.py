@@ -1,7 +1,7 @@
 ROLE_COUNTS = {
-    "wolf": 4,
+    "wolf": 3,
     "hunter": 1,
-    "villager": 10
+    "villager": 8
 }
 
 ALPHA = 0.15

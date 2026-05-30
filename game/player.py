@@ -10,7 +10,10 @@ class Player:
         self.convince = np.random.normal(0, 1) # personality traits
 
     def vote(self, players, suspicion_row):
-        candidates = [p for p in players if p.alive and p.id != self.id]
+        if self.role.camp == "loups-garous":
+            candidates = [p for p in players if p.alive and p.id != self.id and p.role.camp != "loups-garous"]
+        else:
+            candidates = [p for p in players if p.alive and p.id != self.id]
   
   		# score = player's suspicion toward the other player + random noise to introduce variability in voting behavior
     

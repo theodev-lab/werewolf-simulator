@@ -42,7 +42,8 @@ class Game:
 		villagers = [p for p in self.players if p.role.camp == "villageois" and p.alive]
   
 		if villagers:
-			target = random.choice(villagers)
+			sorted_villagers = sorted(villagers, key=lambda p: p.convince, reverse=True)
+			target = random.choice(sorted_villagers[:3])
 			self.kill_player(target)
    
 	def voting_process(self):
