@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from config import VOTE_NOISE
 
 class Player:
     def __init__(self, id, role):
@@ -15,7 +16,7 @@ class Player:
     
         scores = []
         for p in candidates:
-            score = suspicion_row[p.id] + random.random() #
+            score = suspicion_row[p.id] + (random.random() * VOTE_NOISE)
             scores.append((score, p.id))
 
         return max(scores)[1]

@@ -4,5 +4,7 @@ ROLE_COUNTS = {
     "villager": 10
 }
 
-N_GAMES = 1
+ALPHA = 0.15
+VOTE_NOISE = 0.2
+N_GAMES = 10000
 SEED = 42
