@@ -1,8 +1,9 @@
 import random
 from config import ALPHA
+from game import texts
 
 def wolves_turn(game):
-    game.log("🐺 Les loups-garous vont décider d'une victime à dévorer.")
+    game.log(texts.get("wolves_turn"))
   
     villagers = [p for p in game.players if p.role.camp == "villageois" and p.alive]
   
@@ -50,22 +51,22 @@ def voting_process(game):
     
     if vote_counts:
         target_id = max(vote_counts, key=vote_counts.get)
-        game.log(f"🗳️  Le village a décidé d'éliminer le joueur {target_id} ({game.players[target_id].role.__class__.__name__}).")
+        game.log(texts.get("vote_elimination", target_id=target_id, role_name=game.players[target_id].role.__class__.__name__))
         game.kill_player(game.players[target_id])       
              
 def night_phase(game):
     game.dead_this_night = []
-    game.log("\n🌙 La nuit tombe sur le village de Thiercelieux...")
+    game.log(texts.get("night_start"))
     game.suspicion.apply_grudge(game.alive_players(), game.current_day)
     wolves_turn(game)
 
 def day_phase(game):
     if not game.dead_this_night:
-        game.log("☀️  Le village se réveille et personne n'est mort pendant la nuit !")
+        game.log(texts.get("day_no_death"))
     else:
-        dead_infos = [f"le joueur {p.id} ({p.role.__class__.__name__})" for p in game.dead_this_night]
-        dead_str = dead_infos[0] if len(dead_infos) == 1 else f"{', '.join(dead_infos[:-1])} et {dead_infos[-1]}"
-        game.log(f"☀️  Le village se réveille sans... {dead_str}.")
+        dead_infos = [texts.get("dead_player", player_id=p.id, role_name=p.role.__class__.__name__) for p in game.dead_this_night]
+        dead_str = dead_infos[0] if len(dead_infos) == 1 else texts.get("dead_players_join", players=", ".join(dead_infos[:-1]), last_player=dead_infos[-1])
+        game.log(texts.get("day_deaths", dead_players=dead_str))
         
         for p in game.dead_this_night:      
             p.role.on_death(game, p)

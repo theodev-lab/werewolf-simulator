@@ -1,4 +1,5 @@
 from roles.base import Role
+from game import texts
 
 class Hunter(Role):
     camp = "villageois"
@@ -9,5 +10,5 @@ class Hunter(Role):
         if candidates:
             suspicion_row = game.suspicion.get_accusation_scores(player.id)
             target = max(candidates, key=lambda p: suspicion_row[p.id])
-            game.log(f"🎯 PAN ! Le chasseur tire une dernière balle sur le joueur {target.id} ({target.role.__class__.__name__})")
+            game.log(texts.get("hunter_shot", target_id=target.id, role_name=target.role.__class__.__name__))
             game.kill_player(target)

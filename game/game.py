@@ -2,6 +2,7 @@ import random
 from game.player import Player
 from game.suspicion import SuspicionManager
 from game.phases import night_phase, day_phase
+from game import texts
 from roles import ROLE_MAP
 
 class Game:
@@ -50,7 +51,7 @@ class Game:
 			return False, None
 		
 	def play(self):
-		self.log("🎮 La partie vient de commencer !")
+		self.log(texts.get("game_start"))
 
 		while True:
 			self.current_day += 1
@@ -68,5 +69,5 @@ class Game:
 			if over:
 				break
 
-		self.log(f"\n🏆 La partie est terminée ! Les {winner} ont gagné !")
+		self.log(texts.get("game_over", winner=winner))
 		return winner
