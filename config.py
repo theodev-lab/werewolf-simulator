@@ -1,12 +1,12 @@
 ROLE_COUNTS = {
-    "wolf": 3,
-    "hunter": 1,
+    "thief": 1,
+    "cupid": 1,
     "seer": 1,
+    "wolf": 3,
     "little_girl": 1,
-    "villager": 6,
-    "thief": 0,
-    "cupid": 0,
-    "witch": 0
+    "witch": 1,
+    "villager": 4,
+    "hunter": 1
 }
 
 ALPHA = 0.15

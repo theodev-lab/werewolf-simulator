@@ -34,4 +34,4 @@ class SuspicionManager:
                     if d > 0:
                         self.grudge[p.id][attacker_id] += p.paranoia * (0.5 ** d)
                 
-                self.grudge[p.id][attacker_id] = min(1.0, self.grudge[p.id][attacker_id])
+                self.grudge[p.id][attacker_id] = min(1, self.grudge[p.id][attacker_id])
