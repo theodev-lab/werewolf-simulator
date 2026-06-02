@@ -1,5 +1,5 @@
-from roles.base import Role
 from game import texts
+from roles.base import Role
 
-class Villager(Role):
+class Witch(Role):
     camp = texts.VILLAGERS

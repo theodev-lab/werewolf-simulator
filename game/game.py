@@ -40,18 +40,18 @@ class Game:
 			self.dead_this_night.append(player)
 	
 	def is_over(self):
-		wolves = [p for p in self.players if p.role.camp == "loups-garous" and p.alive]
-		villagers = [p for p in self.players if p.role.camp == "villageois" and p.alive]
+		wolves = [p for p in self.players if p.role.camp == texts.WOLVES and p.alive]
+		villagers = [p for p in self.players if p.role.camp == texts.VILLAGERS and p.alive]
 		
 		if not wolves:
-			return True, "villageois"
+			return True, texts.VILLAGERS
 		elif len(wolves) >= len(villagers): # we assume that there are only 2 camps : villagers and wolves 
-			return True, "loups-garous"
+			return True, texts.WOLVES
 		else:
 			return False, None
 		
 	def play(self):
-		self.log(texts.get("game_start"))
+		self.log(texts.GAME_START)
 
 		while True:
 			self.current_day += 1
@@ -69,5 +69,6 @@ class Game:
 			if over:
 				break
 
-		self.log(texts.get("game_over", winner=winner))
+		self.log(f"\n{texts.GAME_OVER.format(winner=winner)}")
+
 		return winner
