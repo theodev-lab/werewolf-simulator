@@ -3,7 +3,7 @@ from game.player import Player
 from game.suspicion import SuspicionManager
 from game.phases import night_phase, day_phase
 from game import texts
-from roles import ROLE_MAP
+from roles import ROLE_MAP, Villager
 
 class Game:
 	def __init__(self, role_counts):
@@ -26,10 +26,16 @@ class Game:
 		for role_name, count in self.role_counts.items():
 			RoleClass = ROLE_MAP[role_name]
 			roles_deck.extend([RoleClass() for _ in range(count)])
+
+		if self.role_counts.get("thief", 0) > 0:
+			roles_deck.extend([Villager() for _ in range(2)])
 		
 		random.shuffle(roles_deck)
+
+		dealt_roles = roles_deck[:self.n_players]
+		self.remaining_roles = roles_deck[self.n_players:]
   
-		return [Player(i, role) for i, role in enumerate(roles_deck)]
+		return [Player(i, role) for i, role in enumerate(dealt_roles)]
 
 	def alive_players(self):
 		return [p for p in self.players if p.alive]
@@ -53,7 +59,7 @@ class Game:
 			return True, texts.LOVERS
 		elif n_wolves == 0:
 			return True, texts.VILLAGERS
-		elif n_wolves >= n_villagers: # we assume that there are only 2 camps : villagers and wolves 
+		elif n_wolves >= n_villagers:
 			return True, texts.WOLVES
 		else:
 			return False, None

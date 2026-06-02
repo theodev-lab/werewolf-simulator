@@ -4,6 +4,7 @@ LOVERS = "amoureux"
 
 GAME_START = "🎮 La partie vient de commencer !"
 NIGHT_START = "🌙 La nuit tombe sur le village de Thiercelieux..."
+THIEF_TURN = "🦹 Le voleur va pouvoir échanger, ou non, sa carte."
 CUPID_TURN = "💘 Cupidon va pouvoir rendre deux personnes amoureuses."
 SEER_TURN = "🔮 La voyante va pouvoir espionner un joueur."
 WOLVES_TURN = "🐺 Les loups-garous vont décider d'une victime à dévorer."
