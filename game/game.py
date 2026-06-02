@@ -38,14 +38,22 @@ class Game:
 		if player.alive:
 			player.alive = False
 			self.dead_this_night.append(player)
+
+			if player.lover is not None and player.lover.alive:
+				game_lover = player.lover
+				self.log(texts.LOVER_GRIEF.format(lover_id=game_lover.id, role_name=game_lover.role.__class__.__name__, dead_id=player.id))
+				self.kill_player(game_lover)
 	
 	def is_over(self):
-		wolves = [p for p in self.players if p.role.camp == texts.WOLVES and p.alive]
-		villagers = [p for p in self.players if p.role.camp == texts.VILLAGERS and p.alive]
+		alive_players = self.alive_players()
+		n_wolves = sum(p.role.camp == texts.WOLVES and p.alive for p in self.players)
+		n_villagers = sum(p.role.camp == texts.VILLAGERS and p.alive for p in self.players)
 		
-		if not wolves:
+		if len(alive_players) == 2 and alive_players[0].lover is alive_players[1] and alive_players[1].lover is alive_players[0]:
+			return True, texts.LOVERS
+		elif n_wolves == 0:
 			return True, texts.VILLAGERS
-		elif len(wolves) >= len(villagers): # we assume that there are only 2 camps : villagers and wolves 
+		elif n_wolves >= n_villagers: # we assume that there are only 2 camps : villagers and wolves 
 			return True, texts.WOLVES
 		else:
 			return False, None
@@ -55,13 +63,8 @@ class Game:
 
 		while True:
 			self.current_day += 1
-			night_phase(self)
-   
-			over, winner = self.is_over()
-   
-			if over:
-				break
 
+			night_phase(self)
 			day_phase(self)
    
 			over, winner = self.is_over()

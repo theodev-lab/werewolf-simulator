@@ -8,6 +8,9 @@ class Simulator:
 
     def run(self):
         results = {texts.VILLAGERS: 0, texts.WOLVES: 0}
+
+        if self.role_counts.get("cupid", 0) > 0:
+            results[texts.LOVERS] = 0
         
         for _ in range(self.n_games):
             game = Game(self.role_counts)

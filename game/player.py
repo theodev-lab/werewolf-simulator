@@ -12,9 +12,10 @@ class Player:
         self.convince = np.random.normal(0, 1)
         self.paranoia = np.random.beta(2, 3)
         self.memory = {}
+        self.lover = None
 
     def vote(self, players, suspicion_row):
-        candidates = [p for p in players if p.alive and p.id != self.id]
+        candidates = [p for p in players if p.alive and p.id != self.id and p is not self.lover]
   
         # score = player's suspicion toward the other player + random noise to introduce variability in voting behavior
         scores = [(suspicion_row[p.id] + (random.random() * VOTE_NOISE), p.id) for p in candidates]

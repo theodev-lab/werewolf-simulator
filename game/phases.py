@@ -27,6 +27,16 @@ def update_memory(game, votes):
                 target.memory[voter_id] = []
                 
             target.memory[voter_id].append(game.current_day)
+
+def resolve_death_effects(game):
+    death_index = 0
+
+    while death_index < len(game.dead_this_night):
+        player = game.dead_this_night[death_index]
+        death_index += 1
+        player.role.on_death(game, player)
+
+    game.dead_this_night = []
             
 def voting_process(game):
     # 1) Intention phase: players share their suspicions
@@ -58,10 +68,10 @@ def voting_process(game):
     if vote_counts:
         target_id = max(vote_counts, key=vote_counts.get)
         game.log(texts.VOTE_ELIMINATION.format(target_id=target_id, role_name=game.players[target_id].role.__class__.__name__))
-        game.kill_player(game.players[target_id])       
+        game.kill_player(game.players[target_id])
+        resolve_death_effects(game)
              
 def night_phase(game):
-    game.dead_this_night = []
     game.log(f"\n{texts.NIGHT_START}")
     game.suspicion.apply_grudge(game.alive_players(), game.current_day)
 
@@ -80,7 +90,9 @@ def day_phase(game):
         dead_str = dead_infos[0] if len(dead_infos) == 1 else texts.DEAD_PLAYERS_JOIN.format(players=", ".join(dead_infos[:-1]), last_player=dead_infos[-1])
         game.log(texts.DAY_DEATHS.format(dead_players=dead_str))
         
-        for p in game.dead_this_night:      
-            p.role.on_death(game, p)
+    resolve_death_effects(game)
     
-    voting_process(game)
+    over, _ = game.is_over()
+    
+    if not over:
+        voting_process(game)
