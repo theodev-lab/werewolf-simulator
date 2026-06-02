@@ -4,7 +4,9 @@ from game import texts
 from roles import Cupid, LittleGirl, Seer, Thief, Witch
 
 def role_turn(game, RoleClass):
-    for player in game.alive_players():
+    players = game.alive_players() + game.dead_this_night
+
+    for player in players:
         if isinstance(player.role, RoleClass):
             player.role.on_night(game, player)
 

@@ -49,6 +49,14 @@ class Game:
 				game_lover = player.lover
 				self.log(texts.LOVER_GRIEF.format(lover_id=game_lover.id, role_name=game_lover.role.__class__.__name__, dead_id=player.id))
 				self.kill_player(game_lover)
+
+	def resurrect_player(self, player):
+		if player in self.dead_this_night:
+			player.alive = True
+			self.dead_this_night.remove(player)
+
+			if player.lover is not None and player.lover in self.dead_this_night:
+				self.resurrect_player(player.lover)
 	
 	def is_over(self):
 		alive_players = self.alive_players()
