@@ -39,6 +39,10 @@ def resolve_death_effects(game):
     while death_index < len(game.dead_this_night):
         player = game.dead_this_night[death_index]
         death_index += 1
+
+        if player.role.camp == texts.WOLVES:
+            game.suspicion.apply_wolf_association(player.id, game.alive_players())
+
         player.role.on_death(game, player)
 
     game.dead_this_night = []
@@ -92,6 +96,8 @@ def voting_process(game):
     
     # 4) Update memory of players based on votes (who voted for whom) - this will influence future suspicion and voting behavior
     update_memory(game, votes)
+    game.suspicion.apply_grudge(game.alive_players(), game.current_day)
+    game.suspicion.update_co_vote(votes)
     
     if vote_counts:
         target_id = max(vote_counts, key=vote_counts.get)
@@ -101,7 +107,6 @@ def voting_process(game):
              
 def night_phase(game):
     game.log(f"\n{texts.NIGHT_START}")
-    game.suspicion.apply_grudge(game.alive_players(), game.current_day)
 
     role_turn(game, Thief)
     role_turn(game, Cupid)
@@ -119,6 +124,7 @@ def day_phase(game):
         game.log(texts.DAY_DEATHS.format(dead_players=dead_str))
         
     resolve_death_effects(game)
+    game.suspicion.apply_grudge(game.alive_players(), game.current_day)
     
     over, _ = game.is_over()
     

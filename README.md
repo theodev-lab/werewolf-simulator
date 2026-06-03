@@ -1,6 +1,6 @@
-# 🐺 werewolf-simulator
+# 🐺 werewolves-simulator
 
-This project simulates Werewolf games without requiring human input. Each player receives a role and a randomly generated personality. During the game, players build suspicions, influence one another, vote during the day, and use their role-specific abilities at night.
+This project simulates Werewolves games without requiring human input. Each player receives a role and a randomly generated personality. During the game, players build suspicions, influence one another, vote during the day, and use their role-specific abilities at night.
 
 The simulator can run either a single detailed game or many games in order to estimate each faction's win rate.
 
@@ -48,7 +48,7 @@ ROLE_COUNTS = {
 }
 ```
 
-Set a role count to `0` to disable that role. When the Thief is enabled, two extra Villager cards are automatically added to the deck as the two undealt cards from which the Thief may choose.
+Set a role count to `0` to disable that role. When the Thief is enabled, two extra Villager cards are added to the deck before roles are dealt. After the role distribution, the Thief may choose their role from the two undealt cards.
 
 ### 🎛️ Simulation parameters
 
@@ -57,6 +57,10 @@ Set a role count to `0` to disable that role. When the Thief is enabled, two ext
 | `N_GAMES` | Number of games to simulate. Use `1` for a detailed game log and a larger value for aggregate statistics. |
 | `ALPHA` | Strength of the influence exerted by players during the debate phase. |
 | `VOTE_NOISE` | Random variation added to accusation scores when players vote. |
+| `GRUDGE_IMMEDIATE_WEIGHT` | Initial weight of a fresh grudge immediately after a player receives a vote. |
+| `CO_VOTE_BETA` | Learning rate used to update the co-vote matrix after each day vote. |
+| `CO_VOTE_ASSOCIATION_THRESHOLD` | Minimum co-vote link required before a dead Werewolf increases suspicion toward a living player. |
+| `CO_VOTE_ASSOCIATION_WEIGHT` | Strength of the suspicion increase caused by association with a revealed dead Werewolf. |
 | `HUNTER_SHOT_THRESHOLD` | Minimum suspicion score required for the Hunter to shoot another player when dying. |
 | `WITCH_KILL_THRESHOLD` | Minimum suspicion score required for the Witch to use her death potion. |
 | `USE_SHERIFF` | Enables the sheriff election mechanic. Set to `0` to disable it, or `1` to elect a sheriff on the first day. |
@@ -84,7 +88,9 @@ $$C \sim \mathcal{N}(0, 1)$$
 
 $$P \sim \mathrm{Beta}(2, 3)$$
 
-`C` is the player's persuasion score (`convince`). `P` is their paranoia score (`paranoia`), used to model how strongly they remember previous votes against them.
+where:
+* $C$ is the player's persuasion score (`convince`) ;
+* $P$ is their paranoia score (`paranoia`), used to model how strongly they remember previous votes against them.
 
 During the day, players first announce an intended target. Each speaker then influences the other players' suspicion toward that target:
 
@@ -96,7 +102,41 @@ $$S_{new} = \max(0, \min(1, S_{old} + I))$$
 
 Players also remember who voted against them. This creates a grudge score that decays over time, so recent attacks matter more than old ones:
 
-$$G_{new} = \min\left(1, \sum_{t_{attack} \in T} P \times 0.5^{(t_{current} - t_{attack})} \right)$$
+$$G = \min\left(1,\sum_{t \in T} P \times D(t)\right)$$
+
+where:
+
+$$
+D(t)=
+\begin{cases}
+W_g & \text{for a fresh vote},\\
+0.5^{t_{current}-t} & \text{for a previous vote}.
+\end{cases}
+$$
+
+Here, $W_g$ is `GRUDGE_IMMEDIATE_WEIGHT`.
+
+This gives immediate weight to a fresh vote, allowing it to influence decisions such as the Hunter's revenge shot. Older grudges naturally fade over time.
+
+The simulator also tracks how often pairs of players vote for the same target. This co-vote score is updated using an exponential moving average:
+
+$$C = (1-\beta)C + \beta M$$
+
+where:
+* $M=1$ if both players voted for the same target ;
+* $M=0$ otherwise.
+
+When a Werewolf dies and their role is revealed, players who frequently voted alongside that Werewolf become more suspicious to the rest of the village. The suspicion update is:
+
+$$
+S = \max(0, \min(1, S + (C - T)W))
+$$
+
+where:
+* $T$ is the association threshold ;
+* $W$ is the association weight.
+
+This association effect is applied only when the dead player is a Werewolf. By contrast, the death of a Villager has no effect on the suspicion associated with players who frequently voted alongside them.
 
 The final accusation score combines rational suspicion and emotional grudge:
 
@@ -106,7 +146,11 @@ When voting, the simulator adds a small amount of randomness to avoid fully dete
 
 $$V = A + \epsilon \times N$$
 
-`N` is `VOTE_NOISE`, and `epsilon` is a random value between `0` and `1`. Each player votes for the alive candidate with the highest accusation score. The player with the most votes is eliminated.
+where:
+* $N$ is `VOTE_NOISE` ;
+* $\epsilon$ is a random value between $0$ and $1$.
+
+Each player votes for the alive candidate with the highest accusation score. The player with the most votes is eliminated.
 
 Special roles can also influence this model by introducing a notion of certainty. Unlike regular players, they can obtain reliable information that directly affects their voting behavior. For example, the Seer can lock a suspicion value after discovering a player's role.
 
