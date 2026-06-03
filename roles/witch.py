@@ -14,7 +14,7 @@ class Witch(Role):
 
         wolf_target = game.dead_this_night[0] if game.dead_this_night else None
 
-        if self.life_potion_available and wolf_target is not None and (wolf_target is player or wolf_target is player.lover):
+        if self.life_potion_available and wolf_target is not None and (wolf_target is player or wolf_target is game.get_lover(player)):
             self.life_potion_available = False
             game.resurrect_player(wolf_target)
 

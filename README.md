@@ -59,20 +59,22 @@ Set a role count to `0` to disable that role. When the Thief is enabled, two ext
 | `VOTE_NOISE` | Random variation added to accusation scores when players vote. |
 | `HUNTER_SHOT_THRESHOLD` | Minimum suspicion score required for the Hunter to shoot another player when dying. |
 | `WITCH_KILL_THRESHOLD` | Minimum suspicion score required for the Witch to use her death potion. |
+| `USE_SHERIFF` | Enables the sheriff election mechanic. Set to `0` to disable it, or `1` to elect a sheriff on the first day. |
 | `SEED` | Reserved random seed setting. It is currently declared but not applied by the simulator. |
 
 ## 🎭 Roles
 
 | Player card | Faction | Role |
 | --- | --- | --- |
-| <img src="assets/cards/villager.png" alt="Villager card" width="100"> | Villagers | **Villager**: Their objective is to eliminate every Werewolf. They have no special power and must rely solely on their insight and powers of persuasion. |
-| <img src="assets/cards/wolf.png" alt="Werewolf card" width="100"> | Werewolves | **Werewolf**: Their objective is to eliminate every innocent player, meaning anyone who is not a Werewolf. Each night, the Werewolves choose a victim to eliminate. |
-| <img src="assets/cards/seer.png" alt="Seer card" width="100"> | Villagers | **Seer**: Her objective is to eliminate every Werewolf. Each night, she may inspect a player and discover their true identity. |
-| <img src="assets/cards/little_girl.png" alt="Little Girl card" width="100"> | Villagers | **Little Girl**: Her objective is to eliminate every Werewolf. Each night, she may spy on the Werewolves. |
-| <img src="assets/cards/witch.png" alt="Witch card" width="100"> | Villagers | **Witch**: Her objective is to eliminate every Werewolf. She has two potions: a life potion that can save the Werewolves' victim and a death potion that can eliminate another player. |
-| <img src="assets/cards/hunter.png" alt="Hunter card" width="100"> | Villagers | **Hunter**: Their objective is to eliminate every Werewolf. When they die, they may eliminate another player with their final bullet. |
-| <img src="assets/cards/cupid.png" alt="Cupid card" width="100"> | Villagers | **Cupid**: Their objective is to eliminate every Werewolf. At the beginning of the game, they create a couple. The two lovers must survive together: if one dies, the other dies of grief. |
-| <img src="assets/cards/thief.png" alt="Thief card" width="100"> | Variable | **Thief**: Their objective is not fixed. At the beginning of the game, they may choose their role from the two cards that were not dealt. |
+| <img src="assets/cards/villager.jpg" alt="Villager card" width="100"> | Villagers | **Villager**: Their objective is to eliminate every Werewolf. They have no special power and must rely solely on their insight and powers of persuasion. |
+| <img src="assets/cards/wolf.jpg" alt="Werewolf card" width="100"> | Werewolves | **Werewolf**: Their objective is to eliminate every innocent player, meaning anyone who is not a Werewolf. Each night, the Werewolves choose a victim to eliminate. |
+| <img src="assets/cards/seer.jpg" alt="Seer card" width="100"> | Villagers | **Seer**: Her objective is to eliminate every Werewolf. Each night, she may inspect a player and discover their true identity. |
+| <img src="assets/cards/little_girl.jpg" alt="Little Girl card" width="100"> | Villagers | **Little Girl**: Her objective is to eliminate every Werewolf. Each night, she may spy on the Werewolves. |
+| <img src="assets/cards/witch.jpg" alt="Witch card" width="100"> | Villagers | **Witch**: Her objective is to eliminate every Werewolf. She has two potions: a life potion that can save the Werewolves' victim and a death potion that can eliminate another player. |
+| <img src="assets/cards/hunter.jpg" alt="Hunter card" width="100"> | Villagers | **Hunter**: Their objective is to eliminate every Werewolf. When they die, they may eliminate another player with their final bullet. |
+| <img src="assets/cards/cupid.jpg" alt="Cupid card" width="100"> | Villagers | **Cupid**: Their objective is to eliminate every Werewolf. At the beginning of the game, they create a couple. The two lovers must survive together: if one dies, the other dies of grief. |
+| <img src="assets/cards/thief.jpg" alt="Thief card" width="100"> | Variable | **Thief**: Their objective is not fixed. At the beginning of the game, they may choose their role from the two cards that were not dealt. |
+| <img src="assets/cards/sheriff.jpg" alt="Sheriff card" width="100"> | Special mechanic | **Sheriff**: If enabled, the village elects a sheriff on the first day before the first elimination vote. The sheriff keeps their original role, and their vote counts double during each elimination vote. In case of a tie, the sheriff decides which tied player is eliminated. |
 
 ## 🗳️ Voting and behavior model
 
@@ -88,7 +90,7 @@ During the day, players first announce an intended target. Each speaker then inf
 
 $$I = (C_{speaker} - C_{target}) \times \alpha$$
 
-The resulting influence is added to the listener's suspicion matrix and clamped between `0` and `1`:
+The resulting influence is added to the listener's suspicion matrix:
 
 $$S_{new} = \max(0, \min(1, S_{old} + I))$$
 

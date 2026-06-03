@@ -1,7 +1,11 @@
 import random
-from config import ALPHA
+from config import ALPHA, USE_SHERIFF
 from game import texts
 from roles import Cupid, LittleGirl, Seer, Thief, Witch
+
+def choose_most_convincing_candidate(candidates, top_n=3):
+    preferred_candidates = sorted(candidates, key=lambda p: p.convince, reverse=True)[:top_n]
+    return random.choice(preferred_candidates)
 
 def role_turn(game, RoleClass):
     players = game.alive_players() + game.dead_this_night
@@ -16,8 +20,7 @@ def wolves_turn(game):
     villagers = [p for p in game.players if p.role.camp == texts.VILLAGERS and p.alive]
   
     if villagers:
-        sorted_villagers = sorted(villagers, key=lambda p: p.convince, reverse=True)
-        target = random.choice(sorted_villagers[:3])
+        target = choose_most_convincing_candidate(villagers)
         game.kill_player(target)
                 
 def update_memory(game, votes):
@@ -39,10 +42,32 @@ def resolve_death_effects(game):
         player.role.on_death(game, player)
 
     game.dead_this_night = []
+
+def elect_sheriff(game, candidates=None):
+    candidates = candidates or game.alive_players()
+    voters = game.alive_players()
+
+    vote_counts = {}
+
+    for _ in voters:
+        vote = choose_most_convincing_candidate(candidates)
+        vote_counts[vote.id] = vote_counts.get(vote.id, 0) + 1
+
+    max_votes = max(vote_counts.values())
+    tied_candidate_ids = [candidate_id for candidate_id, votes in vote_counts.items() if votes == max_votes]
+
+    if len(tied_candidate_ids) > 1:
+        tied_candidates = [game.players[candidate_id] for candidate_id in tied_candidate_ids]
+        elect_sheriff(game, tied_candidates)
+        return
+
+    sheriff_id = tied_candidate_ids[0]
+    game.sheriff = game.players[sheriff_id]
+    game.log(texts.SHERIFF_ELECTED.format(sheriff_id=sheriff_id))
             
 def voting_process(game):
     # 1) Intention phase: players share their suspicions
-    intentions = {p.id: p.vote(game.players, game.suspicion.get_accusation_scores(p.id)) for p in game.alive_players()}
+    intentions = {p.id: p.vote(game, game.suspicion.get_accusation_scores(p.id)) for p in game.alive_players()}
     
     # 2) Debate phase: players try to convince each other (this will influence their votes)
     for speaker in game.alive_players():
@@ -60,8 +85,9 @@ def voting_process(game):
     votes = {}
     
     for p in game.alive_players():
-        vote = p.vote(game.players, game.suspicion.get_accusation_scores(p.id))
-        vote_counts[vote] = vote_counts.get(vote, 0) + 1
+        vote = p.vote(game, game.suspicion.get_accusation_scores(p.id))
+        vote_weight = 2 if game.sheriff is p else 1
+        vote_counts[vote] = vote_counts.get(vote, 0) + vote_weight
         votes[p.id] = vote 
     
     # 4) Update memory of players based on votes (who voted for whom) - this will influence future suspicion and voting behavior
@@ -97,4 +123,8 @@ def day_phase(game):
     over, _ = game.is_over()
     
     if not over:
+        if USE_SHERIFF == 1 and game.current_day == 1 and game.sheriff is None:
+            game.log(texts.SHERIFF_TURN)
+            elect_sheriff(game)
+
         voting_process(game)

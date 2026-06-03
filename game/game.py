@@ -16,6 +16,8 @@ class Game:
 		self.history = []
 		self.dead_this_night = []
 		self.current_day = 0
+		self.sheriff = None
+		self.lovers = None
 		
 	def log(self, message):
 		self.history.append(message)
@@ -40,13 +42,33 @@ class Game:
 	def alive_players(self):
 		return [p for p in self.players if p.alive]
 
+	def set_lovers(self, first_lover, second_lover):
+		self.lovers = (first_lover, second_lover)
+
+	def get_lover(self, player):
+		if self.lovers is None:
+			return None
+
+		first_lover, second_lover = self.lovers
+
+		if player is first_lover:
+			return second_lover
+		elif player is second_lover:
+			return first_lover
+		else:
+			return None
+
+	def are_lovers(self, first_player, second_player):
+		return self.get_lover(first_player) is second_player
+
 	def kill_player(self, player):
 		if player.alive:
 			player.alive = False
 			self.dead_this_night.append(player)
 
-			if player.lover is not None and player.lover.alive:
-				game_lover = player.lover
+			game_lover = self.get_lover(player)
+
+			if game_lover is not None and game_lover.alive:
 				self.log(texts.LOVER_GRIEF.format(lover_id=game_lover.id, role_name=game_lover.role.__class__.__name__, dead_id=player.id))
 				self.kill_player(game_lover)
 
@@ -55,19 +77,21 @@ class Game:
 			player.alive = True
 			self.dead_this_night.remove(player)
 
-			if player.lover is not None and player.lover in self.dead_this_night:
-				self.resurrect_player(player.lover)
+			game_lover = self.get_lover(player)
+
+			if game_lover is not None and game_lover in self.dead_this_night:
+				self.resurrect_player(game_lover)
 	
 	def is_over(self):
 		alive_players = self.alive_players()
 		n_wolves = sum(p.role.camp == texts.WOLVES and p.alive for p in self.players)
 		n_villagers = sum(p.role.camp == texts.VILLAGERS and p.alive for p in self.players)
 		
-		if len(alive_players) == 2 and alive_players[0].lover is alive_players[1] and alive_players[1].lover is alive_players[0]:
+		if len(alive_players) == 2 and self.are_lovers(alive_players[0], alive_players[1]):
 			return True, texts.LOVERS
 		elif n_wolves == 0:
 			return True, texts.VILLAGERS
-		elif n_wolves >= n_villagers:
+		elif n_villagers == 0:
 			return True, texts.WOLVES
 		else:
 			return False, None
