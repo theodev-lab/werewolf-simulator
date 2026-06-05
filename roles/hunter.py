@@ -4,6 +4,7 @@ from config import HUNTER_SHOT_THRESHOLD
 
 class Hunter(Role):
     camp = texts.VILLAGERS
+    character_value = 3
 
     def on_death(self, game, player):
         candidates = [p for p in game.players if p.alive and p.id != player.id]
@@ -17,4 +18,5 @@ class Hunter(Role):
                 return
 
             game.log(texts.HUNTER_SHOT.format(target_id=target.id, role_name=target.role.__class__.__name__))
+            
             game.kill_player(target)

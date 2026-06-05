@@ -5,8 +5,6 @@ from roles.base import Role
 from roles.villager import Villager
 
 class Thief(Role):
-    camp = texts.VILLAGERS
-
     def on_night(self, game, player):
         if game.current_day != 1:
             return

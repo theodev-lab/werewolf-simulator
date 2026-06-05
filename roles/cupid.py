@@ -5,6 +5,7 @@ from roles.base import Role
 
 class Cupid(Role):
     camp = texts.VILLAGERS
+    character_value = -2
 
     def on_night(self, game, player):
         if game.current_day != 1:

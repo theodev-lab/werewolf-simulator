@@ -1,9 +1,10 @@
 import random
 from game.player import Player
 from game.suspicion import SuspicionManager
-from game.phases import night_phase, day_phase
+from game.phases import get_most_convincing_candidates, night_phase, day_phase
 from game import texts
-from roles import ROLE_MAP, Villager
+from roles import ROLE_MAP, Villager, Sheriff
+from config import N_GAMES, USE_SHERIFF
 
 class Game:
 	def __init__(self, role_counts):
@@ -20,7 +21,8 @@ class Game:
 		self.lovers = None
 		
 	def log(self, message):
-		self.history.append(message)
+		if N_GAMES == 1:
+			self.history.append(message)
 	
 	def init_players(self):
 		roles_deck = []
@@ -98,6 +100,10 @@ class Game:
 		
 	def play(self):
 		self.log(texts.GAME_START)
+		
+		if USE_SHERIFF == 1:
+			self.log(texts.SHERIFF_TURN)
+			Sheriff.elect(self, get_most_convincing_candidates(self.alive_players()))
 
 		while True:
 			self.current_day += 1

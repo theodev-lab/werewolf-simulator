@@ -3,3 +3,4 @@ from game import texts
 
 class Villager(Role):
     camp = texts.VILLAGERS
+    character_value = 1

@@ -7,6 +7,7 @@ class Player:
         self.id = id
         self.role = role
         self.alive = True
+        self.vote_weight = 1
         
         # personality traits that influence behavior during the game
         self.convince = np.random.normal(0, 1)

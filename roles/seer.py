@@ -3,6 +3,7 @@ from roles.base import Role
 
 class Seer(Role):
     camp = texts.VILLAGERS
+    character_value = 7
 
     def on_night(self, game, player):
         game.log(texts.SEER_TURN)

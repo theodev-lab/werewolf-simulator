@@ -4,6 +4,7 @@ from config import WITCH_KILL_THRESHOLD
 
 class Witch(Role):
     camp = texts.VILLAGERS
+    character_value = 5
 
     def __init__(self):
         self.life_potion_available = True

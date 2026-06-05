@@ -16,6 +16,7 @@ LOVER_GRIEF = "🪦 Dans un élan de chagrin, le joueur {lover_id} ({role_name})
 DAY_NO_DEATH = "☀️  Le village se réveille et personne n'est mort pendant la nuit !"
 SHERIFF_TURN = "🗳️ Les villageois vont pouvoir élire leur maire."
 SHERIFF_ELECTED = "🎖️ Le joueur {sheriff_id} a été élu maire du village."
+SHERIFF_SUCCESSOR = "🎖️ Le joueur {player_id} a été désigné comme nouveau maire du village."
 VOTE_ELIMINATION = "🗳️  Le village a décidé d'éliminer le joueur {target_id} ({role_name})."
 HUNTER_SHOT = "🎯 PAN ! Le chasseur a décidé d'exécuter le joueur {target_id} ({role_name})."
 HUNTER_NO_SHOT = "🎯 Par sa toute bonté, le chasseur n'a finalement exécuté personne."
