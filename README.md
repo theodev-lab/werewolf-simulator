@@ -63,6 +63,7 @@ Set a role count to `0` to disable that role. When the Thief is enabled, two ext
 | `CO_VOTE_ASSOCIATION_WEIGHT` | Strength of the suspicion increase caused by association with a revealed dead Werewolf. |
 | `CONVINCE_ROLE_VALUE_WEIGHT` | Strength of the convince update applied to vote intention leaders after a village elimination. |
 | `SUSPICION_ROLE_VALUE_WEIGHT` | Strength of the suspicion update applied to final voters after a village elimination. |
+| `WOLF_TO_WOLF_SUSPICION_RESISTANCE` | Coefficient reducing the impact of suspicion influence from one Werewolf toward another Werewolf. |
 | `HUNTER_SHOT_THRESHOLD` | Minimum suspicion score required for the Hunter to shoot another player when dying. |
 | `WITCH_KILL_THRESHOLD` | Minimum suspicion score required for the Witch to use her death potion. |
 | `USE_SHERIFF` | Enables the sheriff election mechanic. Set to `0` to disable it, or `1` to elect a sheriff on the first day. |
@@ -108,19 +109,21 @@ $$S_{new} = \max(0, \min(1, S_{old} + I))$$
 
 Players also remember who voted against them. This creates a grudge score that decays over time, so recent attacks matter more than old ones:
 
-$$G = \min\left(1,\sum_{t \in T} P \times D(t)\right)$$
+$$
+G = \min\left(1,\sum_{v \in V} P \times D(v)\right)
+$$
 
-where:
+where $V$ is the set of votes cast against the player, and:
 
 $$
-D(t)=
+D(v)=
 \begin{cases}
-W_g & \text{for a fresh vote},\\
-0.5^{t_{current}-t} & \text{for a previous vote}.
+W_g & \text{if } v \text{ was cast during the current turn},\\
+0.5^{\Delta(v)} & \text{otherwise}.
 \end{cases}
 $$
 
-Here, $W_g$ is `GRUDGE_IMMEDIATE_WEIGHT`.
+Here, $\Delta(v)$ is the number of turns elapsed since vote $v$ was cast, and $W_g$ is `GRUDGE_IMMEDIATE_WEIGHT`.
 
 This gives immediate weight to a fresh vote, allowing it to influence decisions such as the Hunter's revenge shot. Older grudges naturally fade over time.
 

@@ -1,8 +1,11 @@
 import numpy as np
-from config import CO_VOTE_ASSOCIATION_THRESHOLD, CO_VOTE_ASSOCIATION_WEIGHT, CO_VOTE_BETA, GRUDGE_IMMEDIATE_WEIGHT
+from config import CO_VOTE_ASSOCIATION_THRESHOLD, CO_VOTE_ASSOCIATION_WEIGHT, CO_VOTE_BETA, GRUDGE_IMMEDIATE_WEIGHT, WOLF_TO_WOLF_SUSPICION_RESISTANCE
+from game import texts
 
 class SuspicionManager:
-    def __init__(self, n_players):
+    def __init__(self, players):
+        self.players = players
+        n_players = len(players)
         self.suspicion = np.zeros((n_players, n_players)) # suspicion matrix: level of suspicion each player has towards every other player (used for voting behavior)
         self.grudge = np.zeros((n_players, n_players)) # grudge matrix: personal resentment towards other players used as a voting bias in addition to suspicion
         self.locked = np.zeros((n_players, n_players), dtype=bool) # locked matrix: whether a player's opinion about another player is fixed and no longer updated (used for special roles that reveal information)
@@ -15,10 +18,13 @@ class SuspicionManager:
         self.suspicion[observer_id][target_id] = value
         self.grudge[observer_id][target_id] = 0
         self.locked[observer_id][target_id] = True
-    
+
     def apply_influence(self, listener_id, target_id, influence):
         if self.locked[listener_id][target_id]:
             return
+
+        if influence > 0 and self.players[listener_id].role.camp == texts.WOLVES and self.players[target_id].role.camp == texts.WOLVES:
+            influence *= WOLF_TO_WOLF_SUSPICION_RESISTANCE
 
         self.suspicion[listener_id][target_id] += influence
         self.suspicion[listener_id][target_id] = max(0, min(1, self.suspicion[listener_id][target_id]))
@@ -33,6 +39,7 @@ class SuspicionManager:
 
                 for day in days:
                     d = current_day - day
+
                     if d >= 0:
                         decay = GRUDGE_IMMEDIATE_WEIGHT if d == 0 else 0.5 ** d
                         self.grudge[p.id][attacker_id] += p.paranoia * decay

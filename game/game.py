@@ -12,7 +12,7 @@ class Game:
 		self.n_players = sum(role_counts.values())
 		self.players = self.init_players()
 		
-		self.suspicion = SuspicionManager(self.n_players)
+		self.suspicion = SuspicionManager(self.players)
 		
 		self.history = []
 		self.dead_this_night = []
