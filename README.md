@@ -61,6 +61,8 @@ Set a role count to `0` to disable that role. When the Thief is enabled, two ext
 | `CO_VOTE_BETA` | Learning rate used to update the co-vote matrix after each day vote. |
 | `CO_VOTE_ASSOCIATION_THRESHOLD` | Minimum co-vote link required before a dead Werewolf increases suspicion toward a living player. |
 | `CO_VOTE_ASSOCIATION_WEIGHT` | Strength of the suspicion increase caused by association with a revealed dead Werewolf. |
+| `CONVINCE_ROLE_VALUE_WEIGHT` | Strength of the convince update applied to vote intention leaders after a village elimination. |
+| `SUSPICION_ROLE_VALUE_WEIGHT` | Strength of the suspicion update applied to final voters after a village elimination. |
 | `HUNTER_SHOT_THRESHOLD` | Minimum suspicion score required for the Hunter to shoot another player when dying. |
 | `WITCH_KILL_THRESHOLD` | Minimum suspicion score required for the Witch to use her death potion. |
 | `USE_SHERIFF` | Enables the sheriff election mechanic. Set to `0` to disable it, or `1` to elect a sheriff on the first day. |
@@ -92,6 +94,8 @@ where:
 * $C$ is the player's persuasion score (`convince`) ;
 * $P$ is their paranoia score (`paranoia`), used to model how strongly they remember previous votes against them.
 
+### Debate influence
+
 During the day, players first announce an intended target. Each speaker then influences the other players' suspicion toward that target:
 
 $$I = (C_{speaker} - C_{target}) \times \alpha$$
@@ -99,6 +103,8 @@ $$I = (C_{speaker} - C_{target}) \times \alpha$$
 The resulting influence is added to the listener's suspicion matrix:
 
 $$S_{new} = \max(0, \min(1, S_{old} + I))$$
+
+### Grudge memory
 
 Players also remember who voted against them. This creates a grudge score that decays over time, so recent attacks matter more than old ones:
 
@@ -117,6 +123,8 @@ $$
 Here, $W_g$ is `GRUDGE_IMMEDIATE_WEIGHT`.
 
 This gives immediate weight to a fresh vote, allowing it to influence decisions such as the Hunter's revenge shot. Older grudges naturally fade over time.
+
+### Co-vote association
 
 The simulator also tracks how often pairs of players vote for the same target. This co-vote score is updated using an exponential moving average:
 
@@ -138,6 +146,8 @@ where:
 
 This association effect is applied only when the dead player is a Werewolf. By contrast, the death of a Villager has no effect on the suspicion associated with players who frequently voted alongside them.
 
+### Final vote
+
 The final accusation score combines rational suspicion and emotional grudge:
 
 $$A = \max(0, \min(1, S + G))$$
@@ -152,7 +162,40 @@ where:
 
 Each player votes for the alive candidate with the highest accusation score. The player with the most votes is eliminated.
 
-Special roles can also influence this model by introducing a notion of certainty. Unlike regular players, they can obtain reliable information that directly affects their voting behavior. For example, the Seer can lock a suspicion value after discovering a player's role.
+> [!NOTE]
+> Special roles can also influence this model by introducing a notion of certainty. Unlike regular players, they can obtain reliable information that directly affects their voting behavior. For example, the Seer can lock a suspicion value after discovering a player's role.
+
+### Role reveal effects
+
+When the village eliminates a player, that player's role is revealed and produces a character value:
+
+$$
+R = V_{role} + V_{sheriff}
+$$
+
+where:
+* $V_{role}$ is the eliminated player's role value ;
+* $V_{sheriff}$ is added only if the eliminated player was the Sheriff.
+
+The players who announced the eliminated player during the intention phase are treated as accusation leaders. Their `convince` changes according to the revealed value:
+
+$$
+C_{new} = C_{old} - R \times W_c
+$$
+
+where $W_c$ is `CONVINCE_ROLE_VALUE_WEIGHT`.
+
+This means leaders gain convince when the village eliminates a Werewolf, because Werewolves have a negative role value. By contrast, they lose convince when the village eliminates an innocent role, with stronger losses for more valuable roles.
+
+The final voters are also judged by the rest of the village. Every living observer updates their suspicion toward each player who voted for the eliminated target:
+
+$$
+S_{new} = \max(0, \min(1, S_{old} + R \times W_s))
+$$
+
+where $W_s$ is `SUSPICION_ROLE_VALUE_WEIGHT`.
+
+This means voting to eliminate an innocent player makes a voter more suspicious, while voting to eliminate a Werewolf makes them less suspicious.
 
 ## 📄 License
 
