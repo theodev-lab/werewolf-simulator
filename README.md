@@ -31,6 +31,25 @@ The output depends on `N_GAMES` in `config.py`:
 
 Simulation settings are defined in [`config.py`](config.py).
 
+## Optimize simulation constants
+
+The role `character_value` fields are treated as fixed theoretical values from the game rules. The behavioral constants can be tuned with Optuna so simulated win rates better match the theoretical advantage implied by a role distribution.
+
+Install dependencies, then run:
+
+```bash
+python -m optimization.tune_parameters --trials 100 --games-per-config 500
+```
+
+Available options:
+
+* `--trials`: number of Optuna trials to run. More trials give the optimizer more chances to find good constants, but increase runtime.
+* `--games-per-config`: number of simulated games per training configuration and per trial. Higher values reduce random noise, but make each trial slower.
+* `--score-scale`: factor used to convert the theoretical role score into a target advantage with `tanh(score * score_scale)`. Higher values make the target advantage more extreme for the same theoretical score.
+* `--seed`: random seed used by Optuna and the simulator during evaluation. Keeping it fixed makes trials easier to compare; final validation should still be run across several seeds.
+
+The optimizer prints the best constants found and compares them to the default constants.
+
 ### 🃏 Role distribution
 
 `ROLE_COUNTS` controls how many cards of each role are included in a game:

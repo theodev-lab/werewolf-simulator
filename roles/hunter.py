@@ -1,6 +1,5 @@
 from roles.base import Role
 from game import texts
-from config import HUNTER_SHOT_THRESHOLD
 
 class Hunter(Role):
     camp = texts.VILLAGERS
@@ -13,7 +12,7 @@ class Hunter(Role):
             suspicion_row = game.suspicion.get_accusation_scores(player.id)
             target = max(candidates, key=lambda p: suspicion_row[p.id])
 
-            if suspicion_row[target.id] < HUNTER_SHOT_THRESHOLD:
+            if suspicion_row[target.id] < game.params.hunter_shot_threshold:
                 game.log(texts.HUNTER_NO_SHOT)
                 return
 

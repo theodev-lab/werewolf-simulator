@@ -1,10 +1,11 @@
 import numpy as np
-from config import CO_VOTE_ASSOCIATION_THRESHOLD, CO_VOTE_ASSOCIATION_WEIGHT, CO_VOTE_BETA, GRUDGE_IMMEDIATE_WEIGHT, WOLF_TO_WOLF_SUSPICION_RESISTANCE
+from config import DEFAULT_PARAMETERS
 from game import texts
 
 class SuspicionManager:
-    def __init__(self, players):
+    def __init__(self, players, params=DEFAULT_PARAMETERS):
         self.players = players
+        self.params = params
         n_players = len(players)
         self.suspicion = np.zeros((n_players, n_players)) # suspicion matrix: level of suspicion each player has towards every other player (used for voting behavior)
         self.grudge = np.zeros((n_players, n_players)) # grudge matrix: personal resentment towards other players used as a voting bias in addition to suspicion
@@ -24,7 +25,7 @@ class SuspicionManager:
             return
 
         if influence > 0 and self.players[listener_id].role.camp == texts.WOLVES and self.players[target_id].role.camp == texts.WOLVES:
-            influence *= WOLF_TO_WOLF_SUSPICION_RESISTANCE
+            influence *= self.params.wolf_to_wolf_suspicion_resistance
 
         self.suspicion[listener_id][target_id] += influence
         self.suspicion[listener_id][target_id] = max(0, min(1, self.suspicion[listener_id][target_id]))
@@ -41,7 +42,7 @@ class SuspicionManager:
                     d = current_day - day
 
                     if d >= 0:
-                        decay = GRUDGE_IMMEDIATE_WEIGHT if d == 0 else 0.5 ** d
+                        decay = self.params.grudge_immediate_weight if d == 0 else 0.5 ** d
                         self.grudge[p.id][attacker_id] += p.paranoia * decay
                 
                 self.grudge[p.id][attacker_id] = min(1, self.grudge[p.id][attacker_id])
@@ -55,16 +56,17 @@ class SuspicionManager:
                     continue
 
                 same_target = 1 if votes[first_id] == votes[second_id] else 0
-                self.co_vote[first_id][second_id] = ((1 - CO_VOTE_BETA) * self.co_vote[first_id][second_id]) + (CO_VOTE_BETA * same_target)
+                beta = self.params.co_vote_beta
+                self.co_vote[first_id][second_id] = ((1 - beta) * self.co_vote[first_id][second_id]) + (beta * same_target)
 
     def apply_wolf_association(self, dead_wolf_id, alive_players):
         for associated_player in alive_players:
             link = self.co_vote[dead_wolf_id][associated_player.id]
 
-            if link <= CO_VOTE_ASSOCIATION_THRESHOLD:
+            if link <= self.params.co_vote_association_threshold:
                 continue
 
-            influence = (link - CO_VOTE_ASSOCIATION_THRESHOLD) * CO_VOTE_ASSOCIATION_WEIGHT
+            influence = (link - self.params.co_vote_association_threshold) * self.params.co_vote_association_weight
 
             for observer in alive_players:
                 if observer.id != associated_player.id:

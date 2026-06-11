@@ -1,6 +1,5 @@
 import random
 
-from config import ALPHA, CONVINCE_ROLE_VALUE_WEIGHT, SUSPICION_ROLE_VALUE_WEIGHT
 from game import texts
 from roles import Cupid, LittleGirl, Seer, Sheriff, Thief, Witch
 
@@ -48,7 +47,7 @@ def update_leaders_convince(game, target_id, intentions):
     if not vote_leaders:
         return
 
-    delta = -get_revealed_character_value(game, target) * CONVINCE_ROLE_VALUE_WEIGHT
+    delta = -get_revealed_character_value(game, target) * game.params.convince_role_value_weight
 
     for leader in vote_leaders:
         if leader.alive:
@@ -60,7 +59,7 @@ def update_voters_suspicion(game, target_id, votes):
     if not voter_ids:
         return
 
-    delta = get_revealed_character_value(game, game.players[target_id]) * SUSPICION_ROLE_VALUE_WEIGHT
+    delta = get_revealed_character_value(game, game.players[target_id]) * game.params.suspicion_role_value_weight
     observers = [player for player in game.alive_players() if player.id != target_id]
 
     for voter_id in voter_ids:
@@ -94,7 +93,7 @@ def voting_process(game):
         target_id = intentions[speaker.id]
         target = game.players[target_id]
         
-        influence = (speaker.convince - target.convince) * ALPHA
+        influence = (speaker.convince - target.convince) * game.params.alpha
         
         for listener in game.alive_players():
             if listener.id != speaker.id and listener.id != target_id:

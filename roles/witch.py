@@ -1,6 +1,5 @@
 from game import texts
 from roles.base import Role
-from config import WITCH_KILL_THRESHOLD
 
 class Witch(Role):
     camp = texts.VILLAGERS
@@ -26,6 +25,6 @@ class Witch(Role):
                 suspicion_row = game.suspicion.get_accusation_scores(player.id)
                 target = max(candidates, key=lambda p: suspicion_row[p.id])
 
-                if suspicion_row[target.id] >= WITCH_KILL_THRESHOLD:
+                if suspicion_row[target.id] >= game.params.witch_kill_threshold:
                     self.death_potion_available = False
                     game.kill_player(target)

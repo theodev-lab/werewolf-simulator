@@ -1,10 +1,12 @@
 from game.game import Game
 from game import texts
+from config import DEFAULT_PARAMETERS
 
 class Simulator:
-    def __init__(self, role_counts, n_games):
+    def __init__(self, role_counts, n_games, params=DEFAULT_PARAMETERS):
         self.role_counts = role_counts
         self.n_games = n_games
+        self.params = params
 
     def run(self):
         results = {texts.VILLAGERS: 0, texts.WOLVES: 0}
@@ -13,7 +15,7 @@ class Simulator:
             results[texts.LOVERS] = 0
         
         for _ in range(self.n_games):
-            game = Game(self.role_counts)
+            game = Game(self.role_counts, self.params)
             winner = game.play()
             results[winner] += 1
             

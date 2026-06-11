@@ -1,8 +1,12 @@
 from config import ROLE_COUNTS, N_GAMES
 from simulation.simulator import Simulator
 from utils.stats import print_results
+import sys
 
 def main():
+	if hasattr(sys.stdout, "reconfigure"):
+		sys.stdout.reconfigure(encoding="utf-8")
+
 	simulator = Simulator(ROLE_COUNTS, N_GAMES)
 	results = simulator.run()
     

@@ -1,6 +1,5 @@
 import numpy as np
 import random
-from config import VOTE_NOISE
 
 class Player:
     def __init__(self, id, role):
@@ -19,6 +18,6 @@ class Player:
         candidates = [p for p in game.players if p.alive and p.id != self.id and p is not lover]
   
         # score = player's suspicion toward the other player + random noise to introduce variability in voting behavior
-        scores = [(suspicion_row[p.id] + (random.random() * VOTE_NOISE), p.id) for p in candidates]
+        scores = [(suspicion_row[p.id] + (random.random() * game.params.vote_noise), p.id) for p in candidates]
         
         return max(scores)[1]

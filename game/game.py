@@ -4,15 +4,16 @@ from game.suspicion import SuspicionManager
 from game.phases import get_most_convincing_candidates, night_phase, day_phase
 from game import texts
 from roles import ROLE_MAP, Villager, Sheriff
-from config import N_GAMES, USE_SHERIFF
+from config import DEFAULT_PARAMETERS, N_GAMES, USE_SHERIFF
 
 class Game:
-	def __init__(self, role_counts):
+	def __init__(self, role_counts, params=DEFAULT_PARAMETERS):
 		self.role_counts = role_counts
+		self.params = params
 		self.n_players = sum(role_counts.values())
 		self.players = self.init_players()
 		
-		self.suspicion = SuspicionManager(self.players)
+		self.suspicion = SuspicionManager(self.players, self.params)
 		
 		self.history = []
 		self.dead_this_night = []
