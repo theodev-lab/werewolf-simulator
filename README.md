@@ -31,7 +31,7 @@ The output depends on `N_GAMES` in `config.py`:
 
 Simulation settings are defined in [`config.py`](config.py).
 
-## Optimize simulation constants
+## 🎯 Optimize simulation constants
 
 The role `character_value` fields are treated as fixed theoretical values from the game rules. The behavioral constants can be tuned with Optuna so simulated win rates better match the theoretical advantage implied by a role distribution.
 
